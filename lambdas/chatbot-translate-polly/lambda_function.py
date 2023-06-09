@@ -12,7 +12,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 region_name = os.environ.get('ENV_REGION_NAME')
-bueket_key = os.environ.get('BUCKET_KEY')
+bucket_key = os.environ.get('BUCKET_KEY')
 bucket_name = os.environ.get('BUCKET_NAME')
 
 language_code = dict( [ ('es','spanish'), ('pt','portuguese'), ('it','italian'), ('fr','french'),('en','english') ] )
@@ -29,7 +29,7 @@ client_polly = boto3.client('polly')
 s3_client = boto3.client('s3')
 
     
-def smart_kendra(intent_request):
+def smart_chat(intent_request):
     print("intent_request: ",intent_request )
     
     """
@@ -56,30 +56,37 @@ def smart_kendra(intent_request):
         # Use the elicitSlot dialog action to re-prompt for the first violation detected.
         
         if language is None: 
-            slotToElicit = "language"
-         
-            state = 'ReadyForFulfillment'
-            text = text_to_translate
-            response_dominant_language = client_comprehend.detect_dominant_language(
-                            Text= text_to_translate
-                        )
-            
-            dominant_language = language_code[response_dominant_language["Languages"][0]["LanguageCode"]]
-            confidence = response_dominant_language["Languages"][0]["Score"]
-            
-            print("\nSearch results for query: " + dominant_language + "\n")
-            
-         
-            response_chat = f" The dominant language of the text is: {dominant_language}, with a the level of confidence: {confidence} , \n \n What language do you want to translate? ".format(dominant_language,confidence)
-            print(response_chat)
-         
-            intent = lex.set_slot("trasnlate", response_dominant_language["Languages"][0]["LanguageCode"], intent)
-            intent = lex.set_slot("text",text, intent)
-            print("Intent: ",intent)
-            
-            return lex.elicit_slot(
-                active_contexts, session_attributes, intent,slotToElicit,[{'contentType': 'PlainText', 'content': response_chat}])
-           
+            try:
+                slotToElicit = "language"
+             
+                state = 'ReadyForFulfillment'
+                text = text_to_translate
+                response_dominant_language = client_comprehend.detect_dominant_language(
+                                Text= text_to_translate
+                            )
+                
+                dominant_language = language_code[response_dominant_language["Languages"][0]["LanguageCode"]]
+                confidence = "{:.2f}".format(response_dominant_language["Languages"][0]["Score"]*100)
+                
+                print("\nSearch results for query: " + dominant_language + "\n")
+                
+             
+                response_chat = f" The dominant language of the text is: {dominant_language}, with a the level of confidence: {confidence} , \n \n What language do you want to translate? ".format(dominant_language,confidence)
+                print(response_chat)
+             
+                intent = lex.set_slot("trasnlate", response_dominant_language["Languages"][0]["LanguageCode"], intent)
+                intent = lex.set_slot("text",text, intent)
+                print("Intent: ",intent)
+                
+                return lex.elicit_slot(
+                    active_contexts, session_attributes, intent,slotToElicit,[{'contentType': 'PlainText', 'content': response_chat}])
+            except:
+                slotToElicit = "text"
+                intent = lex.set_slot("text",None, intent)
+                response_chat = f" I don't recognize {text_to_translate} as a language, try a valid language (spanish, portuguese, italian, french, english) ".format(text_to_translate)
+                return lex.elicit_slot(
+                    active_contexts, session_attributes, intent,slotToElicit,[{'contentType': 'PlainText', 'content': response_chat}])
+               
             
         elif language is not None :
             try: 
@@ -101,19 +108,24 @@ def smart_kendra(intent_request):
                                 LanguageCode = languageCode,
                                 OutputFormat='mp3',
                                 OutputS3BucketName=bucket_name,
-                                OutputS3KeyPrefix=bueket_key,
+                                OutputS3KeyPrefix=bucket_key,
                                 Text=text_done,
                                 VoiceId= targetVoice
                                 )
                 print(response_polly)
                 
-                s3_path = bueket_key + response_polly['SynthesisTask']['OutputUri'].split("/")[-1]  
+                s3_path = bucket_key + response_polly['SynthesisTask']['OutputUri'].split("/")[-1]  
     
-                mp3_presigned_url = utils.generate_presigned_url(bucket_name, s3_path, expiration=3600)
+                mp3_presigned_url = utils.create_presigned_url(bucket_name, s3_path, expiration=3600)
+                
+                
+                print("mp3_presigned_url: ",mp3_presigned_url)
+                print("s3_path: ",s3_path)
                 
                 url_short = utils.getShortUrl(mp3_presigned_url)
                 
-                response_chat = f"Translation result: {text_done} \n \n \n \n Here you can hear the pronunciation: {url_short}".format(text_done,url_short)
+            
+                response_chat = f"Translation result: {text_done} \n \n \n \n Here you can hear the pronunciation .. wait a few seconds: {url_short}".format(text_done,url_short)
                 
                 print(response_chat)
            
@@ -122,9 +134,11 @@ def smart_kendra(intent_request):
                     active_contexts, session_attributes, intent,[{'contentType': 'PlainText', 'content': response_chat}])
                     
             except:
+                slotToElicit = "language"
+                intent = lex.set_slot("language",None, intent)
                 response_chat = f" I don't recognize {text_to_translate} as a language, try a valid language (spanish, portuguese, italian, french, english) ".format(text_to_translate)
-                return lex.elicit_intent(
-                    active_contexts, session_attributes, intent,[{'contentType': 'PlainText', 'content': response_chat}])
+                return lex.elicit_slot(
+                    active_contexts, session_attributes, intent,slotToElicit,[{'contentType': 'PlainText', 'content': response_chat}])
             
         else:
             response_chat = f" Wrong value.. try again"
@@ -145,7 +159,7 @@ def dispatch(intent_request):
 
     # Dispatch to your bot's intent handlers
     if intent_name == 'NewIntent':
-        return smart_kendra(intent_request)
+        return smart_chat(intent_request)
 
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
