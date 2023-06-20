@@ -1,0 +1,81 @@
+{
+    "sessionId": "",
+    "inputTranscript": "I want to translate to spanish",
+    "interpretations": [
+        {
+            "intent": {
+                "name": "TranslateIntent",
+                "slots": {
+                    "language_out_slot": spanish,
+                    "text_to_translate": None
+                },
+                "state": "InProgress",
+                "confirmationState": "None"
+            },
+            "nluConfidence": 0.89
+        },
+        {
+            "intent": {
+                "name": "FallbackIntent",
+                "slots": {},
+                "state": "InProgress",
+                "confirmationState": "None"
+            }
+        }
+    ],
+    "bot": {
+        "name": "test-build-on",
+        "version": "DRAFT",
+        "localeId": "en_US",
+        "id": "",
+        "aliasId": "",
+        "aliasName": "TestBotAlias"
+    },
+    "responseContentType": "text/plain; charset=utf-8",
+    "proposedNextState": {
+        "prompt": {
+            "attempt": "Initial"
+        },
+        "intent": {
+            "name": "NewIntent",
+            "slots": {
+                "language_out": None,
+                "text_to_translate": None,
+                "language_in": None
+            },
+            "state": "InProgress",
+            "confirmationState": "None"
+        },
+        "dialogAction": {
+            "type": "ElicitSlot",
+            "slotToElicit": "language_out"
+        }
+    },
+    "sessionState": {
+        "sessionAttributes": {},
+        "intent": {
+            "name": "TranslateIntent",
+            "slots": {
+                "language_out": None,
+                "text_to_translate": None,
+                "language_in": None
+            },
+            "state": "InProgress",
+            "confirmationState": "None"
+        },
+        "originatingRequestId": ""
+    },
+    "transcriptions": [
+        {
+            "resolvedContext": {
+                "intent": "NewIntent"
+            },
+            "transcription": "i want to translatr",
+            "resolvedSlots": {},
+            "transcriptionConfidence": 1.0
+        }
+    ],
+    "messageVersion": "1.0",
+    "invocationSource": "DialogCodeHook",
+    "inputMode": "Text"
+}
