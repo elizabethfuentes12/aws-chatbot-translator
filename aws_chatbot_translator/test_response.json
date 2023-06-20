@@ -1,0 +1,22 @@
+{
+    "sessionState": {
+        "sessionAttributes": {
+            "previous_slot_to_elicit": None,
+            "previous_message": "[{"contentType": "PlainText", "content": "The translate text is: Il cane corre nel parco. \\nAnything else?"}]",
+            "previous_dialog_action_type": "ElicitIntent",
+            "previous_intent": "TranslateIntent"
+        },
+        "activeContexts": [],
+        "dialogAction": {
+            "type": "ElicitIntent"
+        },
+        "state": "Fulfilled"
+    },
+    "requestAttributes": {},
+    "messages": [
+        {
+            "contentType": "PlainText",
+            "content": "The translate text is: Il cane corre nel parco. \nAnything else?"
+        }
+    ]
+}
