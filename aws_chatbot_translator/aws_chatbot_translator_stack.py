@@ -49,7 +49,7 @@ class AwsChatbotTranslatorStack(Stack):
 
         lambda_chatbot_build_on.add_to_role_policy(
             aws_iam.PolicyStatement(
-                        actions=["translate:TranslateText","comprehend:DetectDominantLanguage","polly:StartSpeechSynthesisTask"], 
+                        actions=["translate:TranslateText","comprehend:DetectDominantLanguage","polly:StartSpeechSynthesisTask","polly:GetSpeechSynthesisTask"], 
                         resources=['*'])
                     )
         

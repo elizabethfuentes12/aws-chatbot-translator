@@ -3,6 +3,7 @@ import lex_utils as lex_lib
 import boto3
 import utils
 import os
+import time
 
 client_translate = boto3.client('translate')
 
@@ -16,6 +17,7 @@ def translate_text (text,language_out):
     TargetLanguageCode=language_out  
 )
     return response['TranslatedText'] 
+
 
 def text_to_speech(text,language_out):
     polly_client = boto3.client('polly')
@@ -34,6 +36,7 @@ def text_to_speech(text,language_out):
     )
     
     print(response)
+    
     s3_path = bucket_key + response['SynthesisTask']['OutputUri'].split("/")[-1]  
     
     mp3_presigned_url = utils.create_presigned_url(bucket_name, s3_path, expiration=3600)
@@ -61,31 +64,48 @@ def lambda_handler(event, context):
         print(intent_name)
         language_out = lex_lib.get_slot("language_out",intent)
         text_to_translate = lex_lib.get_slot("text_to_translate",intent)
+        yes_no = lex_lib.get_slot("yes-no",intent)
+        print(language_out,yes_no)
 
         if language_out == None:
             return lex_lib.delegate(active_contexts, session_attributes, intent)
             
-        if (text_to_translate == None) and (language_out != None) and (previous_slot_to_elicit != "text_to_translate"):
+        if (text_to_translate == None) and (language_out != None) and (previous_slot_to_elicit != "text_to_translate") and (session_attributes.get('url_short') == None):
             response = "What text do you want to translate?"
             messages =  [{'contentType': 'PlainText', 'content': response}]
             print(lex_lib.elicit_slot("text_to_translate", active_contexts, session_attributes, intent, messages))
             return lex_lib.elicit_slot("text_to_translate", active_contexts, session_attributes, intent, messages)
-       
-        if previous_slot_to_elicit == "text_to_translate": 
+     
+        
+        if  (previous_slot_to_elicit == "text_to_translate") and (language_out != None) and (session_attributes.get('url_short') == None): 
+            print("diferente a none")
             text_to_translate = event["inputTranscript"]
             text_ready = translate_text(text_to_translate,language_out)
-            #response = f"The translate text is: {text_ready}. \nAnything else?"
-            #messages =  [{'contentType': 'PlainText', 'content': response}]
-
-            url_short = text_to_speech(text_ready,language_out)
-            response = f"The translate text is: {text_ready}. Please.. wait 20 seconds.. and listen to the translation here {url_short}"
-
+            
+            session_attributes['url_short'] = text_to_speech(text_ready,language_out)
+            print ("url_short: ", session_attributes['url_short'])
+           
+            
+            response = f"The translate text is: {text_ready}. Would you like to hear the pronunciation? (yes/no)"
             messages =  [{'contentType': 'PlainText', 'content': response}]
-
-
+            
+            print(lex_lib.confirm_intent(active_contexts, session_attributes, intent, messages))
+            return lex_lib.confirm_intent(active_contexts, session_attributes, intent, messages)
+        
+            
+        if intent['confirmationState'] == 'Confirmed': 
+            url_short = session_attributes.get('url_short')
+            time.sleep(3)
+            response = f" Hear the pronunciation here {url_short}"
+            messages =  [{'contentType': 'PlainText', 'content': response}]
+                
             print(lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages))
             return lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages)
-    
-        print(language_out,text_to_translate)
-        
-        
+            
+        if intent['confirmationState'] == 'Denied':
+                
+            response = f"Have a nice day"
+            messages =  [{'contentType': 'PlainText', 'content': response}]
+                
+            print(lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages))
+            return lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages)
