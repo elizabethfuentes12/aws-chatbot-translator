@@ -109,3 +109,8 @@ def lambda_handler(event, context):
                 
             print(lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages))
             return lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages)
+                
+    
+       
+        
+        

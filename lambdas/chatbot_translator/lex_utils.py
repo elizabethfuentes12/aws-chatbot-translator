@@ -101,7 +101,7 @@ def elicit_slot(slotToElicit, active_contexts, session_attributes, intent, messa
 
 def confirm_intent(active_contexts, session_attributes, intent, messages, **previous_state):
     active_contexts = remove_inactive_context(active_contexts)
-    del intent['state']
+    if intent.get("state"): del intent['state']
     if not session_attributes:
         session_attributes = {}
     session_attributes['previous_message'] = json.dumps(messages)
