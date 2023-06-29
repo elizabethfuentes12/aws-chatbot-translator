@@ -9,6 +9,8 @@ import base64
 from PIL import Image as OpenImage
 import random
 import time
+import requests
+import string
 
 ENDPOINT_TEXT_TO_TEXT = os.environ.get('ENV_ENDPOINT_TEXT_TO_TEXT')
 ENDPOINT_TEXT_TO_IMAGE = os.environ.get('ENV_ENDPOINT_TEXT_TO_IMAGE')
@@ -36,29 +38,9 @@ def query_endpoint_with_json_payload(encoded_json, endpoint_name):
     )
     return response
     
+#https://github.com/aws-samples/aws-lex-web-ui 
+    
 
-#https://github.com/aws/amazon-sagemaker-examples/blob/main/introduction_to_amazon_algorithms/jumpstart_text_summarization/Amazon_JumpStart_Text_Summarization.ipynb
-
-def summarize(ENDPOINT_TEXT_TO_TEXT,text_response):
-    num_return_sequences = 3
-    parameters = {
-        "max_length": 50,
-        "max_time": 50,
-        "num_return_sequences": num_return_sequences,
-        "top_k": 50,
-        "top_p": 0.95,
-        "do_sample": True,
-    }
-
-    promt = "Generate a short summary this sentence:\n{text_response}"
-    payload = {"text_inputs": promt.replace("{text_response}", text_response), **parameters}
-
-    query_response = query_endpoint_with_json_payload(
-                        json.dumps(payload).encode("utf-8"), endpoint_name=ENDPOINT_TEXT_TO_TEXT)
-    generated_texts = parse_response_multiple_texts(query_response)
-    print(generated_texts)
-    result = generated_texts[0]
-    return result
 
 #https://aws.amazon.com/marketplace/ai/procurement?productId=96e6989b-7f37-4637-8fd6-e775787405bd
 #https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html
@@ -71,7 +53,6 @@ def fun_text_to_image(ENDPOINT_TEXT_TO_IMAGE,text,style):
                         "neon-punk", "isometric", "low-poly", "origami", "modeling-compound", "cinematic",
                         "3d-model", "pixel-art", "tile-texture"]
         """
-
     payload = {
         "text_prompts": [{"text":text}],
         "style_preset": style,
@@ -105,9 +86,10 @@ def fun_text_to_image(ENDPOINT_TEXT_TO_IMAGE,text,style):
         image.save('/tmp/' + file_name)
         
         s3 = boto3.client("s3")
-        bucket_name = os.environ['ENV_BUCKET_NAME']
+        #bucket_name = os.environ['bucket_name']
         #bucket_folder =os.environ['bucket_folder']
         bucket_folder = "text_to_image/"
+        bucket_name = "demo-eli-us-east-1"
         s3_path = bucket_folder  + file_name
         s3.upload_file('/tmp/' + file_name, bucket_name, s3_path, ExtraArgs={'Metadata': {'prompt': text}})
         
@@ -118,7 +100,8 @@ def fun_text_to_image(ENDPOINT_TEXT_TO_IMAGE,text,style):
                 Params={'Bucket': bucket_name , 'Key': s3_path},
                 ExpiresIn=180)
     
-        s3_url = url
+        shortUrl=requests.get("http://tinyurl.com/api-create.php?url="+url);
+        s3_url = shortUrl.content.decode("utf-8")
         
         return s3_url
 
@@ -140,28 +123,7 @@ def lambda_handler(event, context):
     print(attempt)
     
     print(previous_slot_to_elicit)
-    
-    if intent_name == 'summarize':
-        print(intent_name)
-        text_to_summarize = lex_lib.get_slot("text_to_summarize",intent)
-        print(text_to_summarize)
-        
-        if attempt=="Initial":
-            print("entra text_to_summarize")
-            response = "What text do you want to summarize?"
-            messages =  [{'contentType': 'PlainText', 'content': response}]
-            print(lex_lib.elicit_slot("text_to_summarize", active_contexts, session_attributes, intent, messages))
-            return lex_lib.elicit_slot("text_to_summarize", active_contexts, session_attributes, intent, messages)
-       
-        if  attempt=="Retry1": 
-            print("entra summarize")
-            text_to_summarize = event["inputTranscript"]
-            text_ready = summarize(ENDPOINT_TEXT_TO_TEXT,text_to_summarize)
-            response = f"The summarize text is: {text_ready}."
-            messages =  [{'contentType': 'PlainText', 'content': response}]
-            print(lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages))
-            return lex_lib.elicit_intent(active_contexts, session_attributes, intent, messages)
-            
+
     if intent_name == 'text_to_image':
         print(intent_name)
         style = lex_lib.get_slot("styleimage",intent)
