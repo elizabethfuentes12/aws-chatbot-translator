@@ -1,8 +1,8 @@
 # Create your own chatbot! 
 
-Deploy the CDK for AWS lambdas functions and create the Amazon lex Chatbot (Importing)[https://docs.aws.amazon.com/lexv2/latest/dg/import-console.html] the (.zip files)[https://github.com/elizabethfuentes12/aws-chatbot-translator/tree/master/chatbots]
+Deploy the CDK for AWS lambdas functions and create the Amazon lex Chatbot [Importing](https://docs.aws.amazon.com/lexv2/latest/dg/import-console.html) the [].zip files](https://github.com/elizabethfuentes12/aws-chatbot-translator/tree/master/aws_chatbot_translator/chatbots)
 
-This [repo](https://github.com/aws-samples/aws-lex-web-ui) provides a chatbot UI which you can deploy using the (AWS CloudFormation)[https://aws.amazon.com/es/cloudformation/] templates
+This (repo)[https://github.com/aws-samples/aws-lex-web-ui] provides a chatbot UI which you can deploy using the [AWS CloudFormation](https://aws.amazon.com/es/cloudformation/) templates
 
 
 # Welcome to your CDK Python project!
