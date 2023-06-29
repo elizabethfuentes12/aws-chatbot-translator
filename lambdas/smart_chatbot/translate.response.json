@@ -1,0 +1,31 @@
+{
+    "interpretations": [
+        {
+            "intent": {
+                "name": "FallbackIntent",
+                "slots": {}
+            }
+        }
+    ],
+    "messages": [
+        {
+            "content": "foo",
+            "contentType": "PlainText"
+        }
+    ],
+    "requestAttributes": {},
+    "sessionId": "us-east-1:e11f348a-d1cc-4684-8b91-a6550c7185c1",
+    "sessionState": {
+        "dialogAction": {
+            "type": "ElicitIntent"
+        },
+        "originatingRequestId": "a8211839-d954-4240-b501-08aa8f218407",
+        "sessionAttributes": {
+            "previous_dialog_action_type": "ElicitIntent",
+            "previous_intent": "TranslateIntent",
+            "previous_message": "[{\"contentType\": \"PlainText\", \"content\": \"The translate text is: Il ragazzo corre dietro alla palla. Please.. wait a f seconds.. and listen to the translation here https://tinyurl.com/24qslhph\"}]",
+            "previous_slot_to_elicit": null,
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        }
+    }
+}

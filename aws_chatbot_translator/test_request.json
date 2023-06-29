@@ -79,3 +79,82 @@
     "invocationSource": "DialogCodeHook",
     "inputMode": "Text"
 }
+
+#+++++++++++
+
+{
+    "sessionId": "528681203296418",
+    "inputTranscript": "i want to summarize",
+    "interpretations": [
+        {
+            "intent": {
+                "name": "summarize",
+                "slots": {
+                    "text_to_summarize": None
+                },
+                "state": "InProgress",
+                "confirmationState": "None"
+            },
+            "nluConfidence": 0.9
+        },
+        {
+            "intent": {
+                "name": "FallbackIntent",
+                "slots": {},
+                "state": "InProgress",
+                "confirmationState": "None"
+            }
+        }
+    ],
+    "bot": {
+        "name": "chatbot-genai",
+        "version": "DRAFT",
+        "localeId": "en_US",
+        "id": "W1NJGM3BOT",
+        "aliasId": "TSTALIASID",
+        "aliasName": "TestBotAlias"
+    },
+    "responseContentType": "text/plain; charset=utf-8",
+    "proposedNextState": {
+        "prompt": {
+            "attempt": "Initial"
+        },
+        "intent": {
+            "name": "summarize",
+            "slots": {
+                "text_to_summarize": None
+            },
+            "state": "InProgress",
+            "confirmationState": "None"
+        },
+        "dialogAction": {
+            "type": "ElicitSlot",
+            "slotToElicit": "text_to_summarize"
+        }
+    },
+    "sessionState": {
+        "sessionAttributes": {},
+        "intent": {
+            "name": "summarize",
+            "slots": {
+                "text_to_summarize": None
+            },
+            "state": "InProgress",
+            "confirmationState": "None"
+        },
+        "originatingRequestId": "277a8e08-9014-41e7-9b1d-5b782a9a6589"
+    },
+    "transcriptions": [
+        {
+            "resolvedContext": {
+                "intent": "summarize"
+            },
+            "transcription": "i want to summarize",
+            "resolvedSlots": {},
+            "transcriptionConfidence": 1.0
+        }
+    ],
+    "messageVersion": "1.0",
+    "invocationSource": "DialogCodeHook",
+    "inputMode": "Text"
+}
