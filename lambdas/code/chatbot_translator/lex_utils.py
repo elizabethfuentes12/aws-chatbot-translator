@@ -30,8 +30,8 @@ def close(active_contexts, session_attributes, intent, messages):
             "state": "Fulfilled",
             'intent': intent
         },
-        #'requestAttributes': {},
-        #'messages': messages
+        'requestAttributes': {},
+        'messages': messages
     }
     
 def close_and_delegate(active_contexts, session_attributes, intent, messages):
@@ -58,12 +58,13 @@ def elicit_intent(active_contexts, session_attributes, intent, messages):
     active_contexts = remove_inactive_context(active_contexts)
     if not session_attributes:
         session_attributes = {}
-    session_attributes['previous_message'] = json.dumps(messages)
-    session_attributes['previous_dialog_action_type'] = 'ElicitIntent'
-    session_attributes['previous_slot_to_elicit'] = None
-    session_attributes['previous_intent'] = intent['name']
+    #session_attributes['previous_message'] = json.dumps(messages)
+    #session_attributes['previous_slot_to_elicit'] = None
+    #session_attributes['previous_intent'] = intent['name']
+    #session_attributes['previous_dialog_action_type'] = 'ElicitIntent'
     
     return {
+
         'sessionState': {
             'sessionAttributes': session_attributes,
             'activeContexts': active_contexts,
@@ -73,7 +74,7 @@ def elicit_intent(active_contexts, session_attributes, intent, messages):
             "state": "Fulfilled"
         },
         'requestAttributes': {},
-     'messages': messages
+        'messages': messages
     }
 
 def elicit_slot(slotToElicit, active_contexts, session_attributes, intent, messages):
@@ -101,7 +102,7 @@ def elicit_slot(slotToElicit, active_contexts, session_attributes, intent, messa
 
 def confirm_intent(active_contexts, session_attributes, intent, messages, **previous_state):
     active_contexts = remove_inactive_context(active_contexts)
-    if intent.get("state"): del intent['state']
+    del intent['state']
     if not session_attributes:
         session_attributes = {}
     session_attributes['previous_message'] = json.dumps(messages)

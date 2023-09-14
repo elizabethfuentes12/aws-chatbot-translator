@@ -11,6 +11,9 @@ from aws_cdk import (
 )
 
 from constructs import Construct
+from lambdas import Lambdas #Para desplegar la Funcion Lambda
+from bots import LexBotV2, S3BotFiles #Para desplegar el bot de Amazon Lex
+
 #from chatbot_code import (LexBotV2, LexBotV2Multi, S3BotFiles)
 
 
@@ -21,84 +24,88 @@ class AwsChatbotTranslatorStack(Stack):
 
         stk = Stack.of(self)
         account_id = stk.account
+        Fn  = Lambdas(self,'Fn')
 
         REGION_NAME = self.region
-        REGION_ENDPOINT = you_endpoint_region
 
-        endpoint_text_to_text = your_text_to_text_endpoint
-        endpoint_text_to_image = your_text_to_image_endpoint
-        bucket_name = your_bucket_name
-    
+        REGION_ENDPOINT = self.region
+
+        endpoint_text_to_image =
+        bucket_name = 
+        distribution_name = 
+
+
     
         #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         #++++++++++ The Lambda function invokes Amazon Comprehend for detect Languages +++++++++++++++
         #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        lambda_chatbot_build_on = aws_lambda.Function(self, "lambda_chatbot_translator",
-                                            handler = "lambda_function.lambda_handler",
-                                            timeout = Duration.seconds(300),
-                                            runtime = aws_lambda.Runtime.PYTHON_3_9,
-                                            memory_size = 256, description = "Translate using Amazon Translate creating audio with Amazon Polly to LexChatBot",
-                                            code = aws_lambda.Code.from_asset("./lambdas/chatbot_translator"),
-                                            environment = {
-                                                'ENV_REGION_NAME'  : REGION_NAME,
-                                                "ENV_S3_BUCKET_NAME" : bucket_name,
-                                                }
-                                                
-                                            )
+        lambda_hook_translate = Fn.chatbot_translator_hook
 
-        lambda_chatbot_build_on.add_to_role_policy(
+        lambda_hook_translate.add_environment(key='ENV_BUCKET_NAME', value= bucket_name)
+        lambda_hook_translate.add_environment(key='ENV_DISTRIBUTION_NAME', value= distribution_name)
+
+
+        lambda_hook_translate.add_to_role_policy(
             aws_iam.PolicyStatement(
                         actions=["translate:TranslateText","comprehend:DetectDominantLanguage","polly:StartSpeechSynthesisTask","polly:GetSpeechSynthesisTask"], 
                         resources=['*'])
                     )
         
-        lambda_chatbot_build_on.add_to_role_policy(aws_iam.PolicyStatement(
+        lambda_hook_translate.add_to_role_policy(aws_iam.PolicyStatement(
             actions=[
 				"s3:PutObject",
 				"s3:GetObject"
 			],resources=[f"arn:aws:s3:::{bucket_name}/*",f"arn:aws:s3:::{bucket_name}"
 			])
         )
-        
+
         #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         #++++++++++ Query for summary and to create great images  +++++++++++++++
         #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        lambda_smart_chatbot = aws_lambda.Function(self, "lambda_smart_chatbot",
-                                            handler = "lambda_function.lambda_handler",
-                                            timeout = Duration.seconds(300),
-                                            runtime = aws_lambda.Runtime.PYTHON_3_9,
-                                            memory_size = 256, description = "Query for summary and to create great images",
-                                            code = aws_lambda.Code.from_asset("./lambdas/smart_chatbot"),
-                                            environment = {
-                                                'ENV_REGION_NAME'  : REGION_NAME,
-                                                "ENV_REGION_ENDPOINT" : REGION_ENDPOINT,
-                                                "ENV_ENDPOINT_TEXT_TO_TEXT" : endpoint_text_to_text,
-                                                "ENV_ENDPOINT_TEXT_TO_IMAGE" : endpoint_text_to_image,
-                                                "ENV_BUCKET_NAME" : bucket_name
-                                                }
-                                                
-                                            )
 
-        lambda_smart_chatbot.add_to_role_policy(
+        lambda_hook_image = Fn.cool_image_hook
+
+        lambda_hook_image.add_environment(key='ENV_ENDPOINT_TEXT_TO_IMAGE', value= endpoint_text_to_image)
+        lambda_hook_image.add_environment(key='ENV_BUCKET_NAME', value= bucket_name)
+        lambda_hook_image.add_environment(key='ENV_DISTRIBUTION_NAME', value= distribution_name)
+        lambda_hook_image.add_environment(key='REGION_ENDPOINT', value= REGION_ENDPOINT)
+
+
+        lambda_hook_image.add_to_role_policy(
             aws_iam.PolicyStatement(
                         actions=["translate:TranslateText","comprehend:DetectDominantLanguage"], 
                         resources=['*'])
                     )
         
-        lambda_smart_chatbot.add_to_role_policy(aws_iam.PolicyStatement(
-            actions=["sagemaker:InvokeEndpoint"],resources=[f"arn:aws:sagemaker:{REGION_ENDPOINT}:{account_id}:endpoint/{endpoint_text_to_text}"])
-        )
-        lambda_smart_chatbot.add_to_role_policy(aws_iam.PolicyStatement(
+        lambda_hook_image.add_to_role_policy(aws_iam.PolicyStatement(
             actions=["sagemaker:InvokeEndpoint"],resources=[f"arn:aws:sagemaker:{REGION_ENDPOINT}:{account_id}:endpoint/{endpoint_text_to_image}"])
         )
 
-        lambda_smart_chatbot.add_to_role_policy(aws_iam.PolicyStatement(
+        lambda_hook_image.add_to_role_policy(aws_iam.PolicyStatement(
             actions=[
 				"s3:PutObject",
 				"s3:GetObject"
 			],resources=[f"arn:aws:s3:::{bucket_name}/*",f"arn:aws:s3:::{bucket_name}"
 			]))
+        
+        #+++++++++++++++++++++++++++++++++++++
+        #++++ Desplegar el bot y permisos ++++
+        #+++++++++++++++++++++++++++++++++++++
+
+        bot_language = ["en_US"]
+        bot_zip_file =  "demo-cool-image-LexJson.zip"
+        bot_name = "cool-image-bot"
+
+        _bot_files = S3BotFiles(self, "Files", "./bots/bot_files")
+        demo_bot = LexBotV2(self, "Bot", bot_name, lambda_hook_image, bot_zip_file, _bot_files, bot_language)
+    
+        bot_zip_file_2 =  "demo-chatbot-traductor-LexJson.zip"
+        bot_name_2 = "chatbot-traductor"
+
+        _bot_files_2 = S3BotFiles(self, "Files_2", "./bots/bot_files")
+        demo_bot_2 = LexBotV2(self, "Bot_2", bot_name_2, lambda_hook_translate, bot_zip_file_2, _bot_files_2, bot_language)
+             
 
 

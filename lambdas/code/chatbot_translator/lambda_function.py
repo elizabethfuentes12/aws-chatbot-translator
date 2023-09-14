@@ -7,8 +7,9 @@ import time
 
 client_translate = boto3.client('translate')
 
-bucket_name = os.environ.get('ENV_S3_BUCKET_NAME')
-bucket_key = "traductor_polly/"
+bucket_name = os.environ.get('ENV_BUCKET_NAME')
+distribution_name = os.environ.get('ENV_DISTRIBUTION_NAME')
+bucket_folder = "traductor_polly/"
 
 def translate_text (text,language_out):
     response = client_translate.translate_text(
@@ -36,11 +37,16 @@ def text_to_speech(text,language_out):
     )
     
     print(response)
+    s3 = boto3.client("s3")
+
+    file_name = response['SynthesisTask']['OutputUri'].split("/")[-1] 
     
-    s3_path = bucket_key + response['SynthesisTask']['OutputUri'].split("/")[-1]  
+    s3_path = bucket_folder + file_name
     
-    mp3_presigned_url = utils.create_presigned_url(bucket_name, s3_path, expiration=3600)
-    url_short = utils.getShortUrl(mp3_presigned_url)
+    s3.upload_file('/tmp/' + file_name, bucket_name, s3_path, ExtraArgs={'Metadata': {'prompt': text}})
+
+    s3_url = distribution_name+"/"+s3_path
+
     
     return url_short
 
