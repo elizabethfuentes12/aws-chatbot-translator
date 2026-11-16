@@ -1,3 +1,13 @@
+# ⚠ This repository is deprecated
+
+> **Finished version available:** this repo was the working draft of the "cool image" Lex bot. The complete, documented version (CDK stack, SageMaker/Lex/Translate wiring, React front end) lives in:
+>
+> **[de-la-mente-a-la-pantalla](https://github.com/elizabethfuentes12/de-la-mente-a-la-pantalla)**
+
+This repository is no longer maintained. The CDK stack here does not synthesize as-is (`aws_chatbot_translator_stack.py` has placeholders for `endpoint_text_to_image`, `bucket_name` and `distribution_name` that must be filled in), it targets the deprecated `python3.8` Lambda runtime and `aws-cdk-lib` 2.50.0. Use the repository above instead.
+
+---
+
 # Create your own chatbot! 
 
 Deploy the CDK for AWS lambdas functions and create the Amazon lex Chatbot [Importing](https://docs.aws.amazon.com/lexv2/latest/dg/import-console.html) the [].zip files](https://github.com/elizabethfuentes12/aws-chatbot-translator/tree/master/aws_chatbot_translator/chatbots)
